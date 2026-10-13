@@ -81,6 +81,7 @@
                                     <artifact>*:*</artifact>
                                     <excludes>
                                         <exclude>com/example/graphql/**</exclude>
+                                        <exclude>com/example/aura/**</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
@@ -126,12 +127,58 @@
                                         <exclude>com/example/DatabaseManager$*.class</exclude>
                                         <exclude>com/example/PathParameterRule.class</exclude>
                                         <exclude>com/example/SettingsPanel.class</exclude>
+                                        <exclude>com/example/aura/**</exclude>
                                     </excludes>
                                 </filter>
                             </filters>
                             <transformers>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.example.graphql.GraphQLRecheckScanExtension</mainClass>
+                                </transformer>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                            </transformers>
+                        </configuration>
+                    </execution>
+
+                    <!-- JAR 3: bản Aura/Lightning (main class riêng, file jar riêng) -->
+                    <execution>
+                        <id>aura-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>burp-recheck-scan-aura-${project.version}</finalName>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>aura</shadedClassifierName>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>net.portswigger.burp.extensions:montoya-api</exclude>
+                                    <!-- Bản Aura dùng JSON parser tự viết, không cần Gson. -->
+                                    <exclude>com.google.code.gson:gson</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <!--
+                                Loại class của bản REST và GraphQL khỏi jar Aura để jar này chỉ chứa DUY NHẤT
+                                một class implement BurpExtension (com.example.aura.RecheckScanAuraExtension).
+                            -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>com/example/RecheckScanApiExtension.class</exclude>
+                                        <exclude>com/example/RecheckScanApiExtension$*.class</exclude>
+                                        <exclude>com/example/DatabaseManager.class</exclude>
+                                        <exclude>com/example/DatabaseManager$*.class</exclude>
+                                        <exclude>com/example/PathParameterRule.class</exclude>
+                                        <exclude>com/example/SettingsPanel.class</exclude>
+                                        <exclude>com/example/graphql/**</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.example.aura.RecheckScanAuraExtension</mainClass>
                                 </transformer>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
